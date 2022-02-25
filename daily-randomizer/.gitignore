@@ -1,0 +1,7 @@
+# This .gitignore is needed to not upload local executables
+# so we exclude everyhing BUT the actual source files
+*
+!*.go
+!*.md
+!go.*
+!.gitignore
