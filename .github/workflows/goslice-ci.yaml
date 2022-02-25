@@ -1,0 +1,71 @@
+name: goslice-ci
+
+on:
+  pull_request:
+    paths:
+      - 'goslice/**.go'
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'goslice/**.go'
+
+jobs:
+  build-n-lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: goslice
+
+    steps:
+      - name: git-checkout
+        uses: actions/checkout@v2
+
+      - name: go-setup
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17.x
+
+      - name: go-get
+        run: go get -v -d ./...
+
+      - name: go-test
+        run: go test -v -cover ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.44
+          working-directory: goslice
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build-n-lint
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: git-checkout
+        uses: actions/checkout@v2
+      # requires either #patch, #minor or #major in Git commit message
+      - name: create-tag
+        id: create-tag
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          RELEASE_BRANCHES: main
+      - name: get-merged-pr
+        id: get-merged-pr
+        uses: 8BitJonny/gh-get-current-pr@1.3.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          filterOutClosed: false
+      - name: create-release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.create-tag.outputs.new_tag }}
+          release_name: ${{ fromJSON(steps.get-merged-pr.outputs.pr).title }}
+          body: ${{ fromJSON(steps.get-merged-pr.outputs.pr).body }}
