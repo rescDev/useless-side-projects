@@ -56,7 +56,7 @@ jobs:
           RELEASE_BRANCHES: main
       - name: get-merged-pr
         id: get-merged-pr
-        uses: 8BitJonny/gh-get-current-pr@2.1.3
+        uses: 8BitJonny/gh-get-current-pr@2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           filterOutClosed: false
