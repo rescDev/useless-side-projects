@@ -1,3 +1,3 @@
-module github.com/rescDev/useless-side-projects/goslice
+module github.com/relusc/useless-side-projects/goslice
 
-go 1.17
+go 1.20
